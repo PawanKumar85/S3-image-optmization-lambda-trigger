@@ -1,4 +1,3 @@
-
 # Image Optimization API
 
 This project provides an API for image upload, storage, and optimization using **AWS S3** and **MongoDB**. The API allows users to upload images, store them in S3, and manage them (view, delete, update, and download). Images are stored in separate folders for raw and optimized images.
@@ -25,40 +24,44 @@ This project provides an API for image upload, storage, and optimization using *
 ## Installation
 
 1. Clone the repository:
-    ```bash
-    git clone https://github.com/PawanKumar85/S3-image-optmization-lambda-trigger.git
-    cd S3-image-optmization-lambda-trigger
-    ```
+
+   ```bash
+   git clone https://github.com/PawanKumar85/S3-image-optmization-lambda-trigger.git
+   cd S3-image-optmization-lambda-trigger
+   ```
 
 2. Install dependencies:
-    ```bash
-    npm install
-    ```
+
+   ```bash
+   npm install
+   ```
 
 3. Set up your environment variables:
-    - Create a `.env` file in the root directory.
-    - Add the following variables:
 
-    ```env
-    PORT=3000
-    MONGODB_URL=your-mongodb-connection-string
-    AWS_ACCESS_KEY_ID=your-aws-access-key-id
-    AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-    AWS_REGION=your-aws-region
-    S3_BUCKET_NAME=your-s3-bucket-name
-    NAME = your-s3-name
-    ```
+   - Create a `.env` file in the root directory.
+   - Add the following variables:
+
+   ```env
+   PORT=3000
+   MONGODB_URL=your-mongodb-connection-string
+   AWS_ACCESS_KEY_ID=your-aws-access-key-id
+   AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+   AWS_REGION=your-aws-region
+   S3_BUCKET_NAME=your-s3-bucket-name
+   NAME = your-s3-name
+   ```
 
 4. Run the server:
-    ```bash
-    npm start
-    ```
+   ```bash
+   npm start
+   ```
 
 The server will be running on `http://localhost:3000`.
 
 ## API Endpoints
 
 ### 1. **POST /api/images/upload**
+
 - Uploads an image to AWS S3 and stores it in MongoDB.
 - **Form Field**: `logo`
 - **Request**:
@@ -67,19 +70,22 @@ The server will be running on `http://localhost:3000`.
   - `200 OK`: Image successfully uploaded.
   - `400 Bad Request`: If validation fails (e.g., wrong file type or size).
   - `500 Internal Server Error`: If upload fails.
-  
+
 ### 2. **GET /api/images/list**
+
 - Retrieves all images from MongoDB.
 - **Response**:
   - `200 OK`: Returns an array of image URLs stored in MongoDB.
-  
+
 ### 3. **GET /api/images/list/:id**
+
 - Retrieves a specific image by ID from MongoDB.
 - **Response**:
   - `200 OK`: Returns the image data.
   - `404 Not Found`: If image does not exist.
 
 ### 4. **PUT /api/images/image/:id**
+
 - Updates an existing image by ID.
 - **Request**:
   - A new image file sent via form data under the field name `logo`.
@@ -89,6 +95,7 @@ The server will be running on `http://localhost:3000`.
   - `500 Internal Server Error`: If upload fails.
 
 ### 5. **DELETE /api/images/delete/:id**
+
 - Deletes an image by ID from both MongoDB and AWS S3.
 - **Response**:
   - `200 OK`: Image successfully deleted.
@@ -96,12 +103,14 @@ The server will be running on `http://localhost:3000`.
   - `500 Internal Server Error`: If deletion fails.
 
 ### 6. **GET /api/images/download/:id**
+
 - Downloads an image from S3.
 - **Response**:
   - `200 OK`: Image file will be returned as a downloadable attachment.
   - `404 Not Found`: If image does not exist.
 
 ### 7. **GET /api/images/AWS/S3/list**
+
 - Lists all images stored in the `Optimize-images` folder in AWS S3.
 - **Response**:
   - `200 OK`: Returns an array of image URLs from S3.
@@ -145,12 +154,70 @@ The server will be running on `http://localhost:3000`.
 ├── .env                 # Environment variables for setup
 ├── package.json         # Project metadata and dependencies
 └── README.md            # Project documentation
+├── Dockerfile
+└── docker-compose.yml
 ```
 
-## License
+## Docker Compose Configuration
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The `docker-compose.yml` file defines the following services:
 
----
+- **MongoDB**: Uses the official MongoDB image and persists data in the `mongo-data` volume.
+- **API**: Built using the Dockerfile from the current directory. It uses the `pawan630703/s3-image-storage:v2` image for deployment.
 
-Feel free to contribute or report any issues! If you have questions, open an issue, and I’ll be happy to help.
+## Docker Compose Example
+
+```bash
+
+services:
+  express-api:
+    build: .
+    container_name: express-api
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/${NAME}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+    volumes:
+      - ./app:/usr/src/app
+      - /usr/src/app/node_modules
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge
+
+```
+
+## Docker Push
+
+To pull the `s3-image-storage:v2` Docker image from Docker Hub:
+
+#### Pull the Docker image:
+
+```bash
+docker pull pawan630703/s3-image-storage:v2
+```
+
+## Contributing
+
+Feel free to fork the repository and submit issues or pull requests if you have any improvements or bug fixes.
+
