@@ -1,0 +1,7 @@
+PORT=3000
+MONGODB_URL=your-mongodb-connection-string
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_REGION=your-aws-region
+S3_BUCKET_NAME=your-s3-bucket-name
+NAME = your-s3-name
